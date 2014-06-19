@@ -1,0 +1,19 @@
+{
+  "name": "mock-pointdns",
+  "version": "0.0.1",
+  "description": "Mocks the pointdns API for use in local testing.",
+  "main": "./lib/app.js",
+  "scripts": {
+    "test": "mocha -R spec"
+  },
+  "author": "David Wood <david.p.wood@gmail.com>",
+  "license": "None",
+  "dependencies": {
+    "express": "~4.4.1",
+    "debug": "~1.0.2",
+    "body-parser": "~1.4.1"
+  },
+  "devDependencies": {
+    "supertest": "~0.13.0"
+  }
+}
