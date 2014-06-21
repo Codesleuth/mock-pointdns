@@ -38,7 +38,7 @@ function expectedZoneResponse(zoneid, zone) {
 function expectedZoneRecordResponse(zoneid, zone, recordid, record) {
   return {
     "id": recordid,
-    "name": record["name"] + '.' + zone["name"],
+    "name": record["name"] + '.' + zone["name"] + '.',
     "data": record["data"],
     "aux": record["aux"],
     "record_type": record["record_type"],
