@@ -14,7 +14,7 @@ function createRandomZone() {
   }
 }
 
-function createRandomZoneRecord(zone) {
+function createRandomZoneRecord() {
   return {
     "name": random.string(10),
     "data": random.ipAddress(),
@@ -310,7 +310,7 @@ describe('Mock PointHQ Server', function () {
 
   });
 
-  describe('PUT /zones/1/record/1', function () {
+  describe('PUT /zones/1/records/1', function () {
 
     var zone;
     var record;
@@ -331,7 +331,7 @@ describe('Mock PointHQ Server', function () {
     it('should change the data of the first zone\'s first record', function (done) {
 
       request(serverurl)
-        .put('/zones/1/record/1')
+        .put('/zones/1/records/1')
         .send({ zone_record: { data: ipAddress }})
         .expect(202)
         .expect({ zone_record: expectedZoneRecordResponse(1, zone, 1, record) })
