@@ -296,7 +296,7 @@ describe('Mock PointHQ Server', function () {
       request(serverurl)
         .put('/zones/1')
         .send({ zone: { group: group }})
-        .expect(200)
+        .expect(202)
         .expect({ zone: expectedZoneResponse(1, zone) })
         .end(done);
 
@@ -333,7 +333,7 @@ describe('Mock PointHQ Server', function () {
       request(serverurl)
         .put('/zones/1/record/1')
         .send({ zone_record: { data: ipAddress }})
-        .expect(200)
+        .expect(202)
         .expect({ zone_record: expectedZoneRecordResponse(1, zone, 1, record) })
         .end(done);
 
