@@ -242,11 +242,62 @@ describe('Authorization', function () {
         mockserver.setApiToken(apitoken);
       });
 
-      it('should return 403 Forbidden', function (done) {
+      it('should return 200 OK', function (done) {
 
         request(serverurl)
           .get('/zones')
           .auth('', apitoken)
+          .expect(200)
+          .end(done);
+
+      });
+
+    });
+
+    describe('GET /zones with valid user and API token password', function () {
+
+      var user;
+      var apitoken;
+
+      before(function () {
+        mockserver.reset();
+
+        user = createRandomUser();
+        apitoken = uuid.v4();
+        
+        mockserver.addUser(user);
+        mockserver.setApiToken(apitoken);
+      });
+
+      it('should return 200 OK', function (done) {
+
+        request(serverurl)
+          .get('/zones')
+          .auth(user.username, apitoken)
+          .expect(200)
+          .end(done);
+
+      });
+
+    });
+
+    describe('GET /zones with invalid user and API token password', function () {
+
+      var apitoken;
+
+      before(function () {
+        mockserver.reset();
+
+        apitoken = uuid.v4();
+        
+        mockserver.setApiToken(apitoken);
+      });
+
+      it('should return 200 OK', function (done) {
+
+        request(serverurl)
+          .get('/zones')
+          .auth(random.string(), apitoken)
           .expect(200)
           .end(done);
 
