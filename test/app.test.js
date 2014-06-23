@@ -9,7 +9,7 @@ var request = require('supertest'),
 function createRandomUser() {
   return {
     username: random.string(20),
-    apitoken: uuid.v4()
+    password: random.string(50)
   }
 }
 
@@ -70,21 +70,45 @@ after(function (done) {
 });
 
 
-describe('Mock PointHQ Server', function () {
+describe('Unknown Routes', function () {
 
-  describe('GET /zones without authorization header', function () {
+  describe('GET /unknown_path', function () {
 
-    var zone;
+    var user;
 
     before(function () {
       mockserver.reset();
 
-      zone = createRandomZone();
+      user = createRandomUser();
 
-      mockserver.addZone(zone);
+      mockserver.addUser(user);
     });
 
-    it('should return 302 Found with Location set', function (done) {
+    it('should return 404', function (done) {
+
+      request(serverurl)
+        .get('/unknown_path')
+        .auth(user.username, user.password)
+        .expect(404)
+        .end(done);
+
+    });
+
+  });
+
+});
+
+
+describe('Authorization', function () {
+
+  describe('GET /zones with missing Authorization header', function () {
+
+    before(function () {
+      mockserver.reset();
+      mockserver.addZone(createRandomZone());
+    });
+
+    it('should return 302 Found with Location header', function (done) {
 
       request(serverurl)
         .get('/zones')
@@ -97,39 +121,150 @@ describe('Mock PointHQ Server', function () {
 
   });
 
-  describe('GET /zones with incorrect authorization header', function () {
-
-    var zone;
+  describe('GET /zones/1 with missing Authorization header', function () {
 
     before(function () {
       mockserver.reset();
-
-      zone = createRandomZone();
-      user = createRandomUser();
-
-      mockserver.addZone(zone);
-
-      mockserver.addUser(createRandomUser());
-      mockserver.addUser(user);
-      mockserver.addUser(createRandomUser());
+      mockserver.addZone(createRandomZone());
     });
 
-    it('should return 403 Found with Location set', function (done) {
+    it('should return 404 Not Found', function (done) {
 
       request(serverurl)
-        .get('/zones')
-        .auth(user.username, uuid.v4())
-        .expect(403)
-        .expect({})
+        .get('/zones/1')
+        .expect(404)
         .end(done);
 
     });
 
   });
 
+
+  describe('with Username and Password', function () {
+
+    describe('GET /zones with valid user', function () {
+
+      var user;
+
+      before(function () {
+        mockserver.reset();
+
+        user = createRandomUser();
+
+        mockserver.addZone(createRandomZone());
+        mockserver.addUser(createRandomUser());
+        mockserver.addUser(user);
+        mockserver.addUser(createRandomUser());
+      });
+
+      it('should return 200 OK', function (done) {
+
+        request(serverurl)
+          .get('/zones')
+          .auth(user.username, user.password)
+          .expect(200)
+          .end(done);
+
+      });
+
+    });
+
+    describe('GET /zones with incorrect username', function () {
+
+      var user;
+
+      before(function () {
+        mockserver.reset();
+
+        user = createRandomUser();
+
+        mockserver.addZone(createRandomZone());
+        mockserver.addUser(createRandomUser());
+        mockserver.addUser(user);
+        mockserver.addUser(createRandomUser());
+      });
+
+      it('should return 403 Forbidden with \'Access Denied\' body', function (done) {
+
+        request(serverurl)
+          .get('/zones')
+          .auth(random.string(10), user.password)
+          .expect(403)
+          .expect({})
+          .end(done);
+
+      });
+
+    });
+
+    describe('GET /zones with incorrect password', function () {
+
+      var user;
+
+      before(function () {
+        mockserver.reset();
+
+        user = createRandomUser();
+
+        mockserver.addZone(createRandomZone());
+        mockserver.addUser(user);
+      });
+
+      it('should return 403 Forbidden', function (done) {
+
+        request(serverurl)
+          .get('/zones')
+          .auth(user.username, random.string(50))
+          .expect(403)
+          .expect('Access denied')
+          .end(done);
+
+      });
+
+    });
+
+  });
+
+  describe('with API Token', function () {
+
+    describe('GET /zones with API token', function () {
+
+      var apitoken;
+
+      before(function () {
+        mockserver.reset();
+
+        var user = createRandomUser();
+        apitoken = user.password = uuid.v4();
+        
+        mockserver.addZone(createRandomZone());
+        mockserver.addUser(user);
+        mockserver.setApiToken(apitoken);
+      });
+
+      it('should return 403 Forbidden', function (done) {
+
+        request(serverurl)
+          .get('/zones')
+          .auth('', apitoken)
+          .expect(200)
+          .end(done);
+
+      });
+
+    });
+
+  });
+
+});
+
+
+describe('Zones', function () {
+
   describe('GET /zones', function () {
 
     var zone1, zone2;
+    var user;
 
     before(function () {
       mockserver.reset();
@@ -147,7 +282,7 @@ describe('Mock PointHQ Server', function () {
 
       request(serverurl)
         .get('/zones')
-        .auth(user.username, user.apitoken)
+        .auth(user.username, user.password)
         .expect(200)
         .expect([{ zone: expectedZoneResponse(1, zone1) },{ zone: expectedZoneResponse(2, zone2) }])
         .end(done);
@@ -159,6 +294,7 @@ describe('Mock PointHQ Server', function () {
   describe('GET /zone/1', function () {
 
     var zone1, zone2;
+    var user;
 
     before(function () {
       mockserver.reset();
@@ -176,7 +312,7 @@ describe('Mock PointHQ Server', function () {
 
       request(serverurl)
         .get('/zones/1')
-        .auth(user.username, user.apitoken)
+        .auth(user.username, user.password)
         .expect(200)
         .expect({ zone: expectedZoneResponse(1, zone1) })
         .end(done);
@@ -188,6 +324,7 @@ describe('Mock PointHQ Server', function () {
   describe('GET /zone/2', function () {
 
     var zone1, zone2;
+    var user;
 
     before(function () {
       mockserver.reset();
@@ -205,7 +342,7 @@ describe('Mock PointHQ Server', function () {
 
       request(serverurl)
         .get('/zones/2')
-        .auth(user.username, user.apitoken)
+        .auth(user.username, user.password)
         .expect(200)
         .expect({ zone: expectedZoneResponse(2, zone2) })
         .end(done);
@@ -214,70 +351,76 @@ describe('Mock PointHQ Server', function () {
 
   });
 
-  describe('GET /zone/1/records', function () {
+  describe('DELETE /zone/2', function () {
 
     var zone;
-    var record1, record2;
+    var user;
 
     before(function () {
       mockserver.reset();
 
       zone = createRandomZone();
-      record1 = createRandomZoneRecord(zone);
-      record2 = createRandomZoneRecord(zone);
       user = createRandomUser();
 
-      mockserver.addZone(zone, [record1, record2]);
+      mockserver.addZone(createRandomZone());
+      mockserver.addZone(zone);
       mockserver.addUser(user);
     });
 
-    it('should return the first zone\'s records', function (done) {
+    it('should delete the second zone', function (done) {
 
       request(serverurl)
-        .get('/zones/1/records')
-        .auth(user.username, user.apitoken)
+        .delete('/zones/2')
+        .auth(user.username, user.password)
         .expect(200)
-        .expect([{
-          zone_record: expectedRecordResponse(1, zone, 1, record1)
-        },{
-          zone_record: expectedRecordResponse(1, zone, 2, record2)
-        }])
+        .expect({ zone: { status: "OK" }})
         .end(done);
+
+    });
+
+    it('should have deleted the zone from the server', function () {
+
+      assert.equal(mockserver.getZones().length, 1);
 
     });
 
   });
 
-  describe('GET /zone/2/records', function () {
+  describe('PUT /zone/1', function () {
 
     var zone;
-    var record1, record2;
+    var group;
+    var user;
 
     before(function () {
       mockserver.reset();
 
+      group = "new group";
+
       zone = createRandomZone();
-      record1 = createRandomZoneRecord(zone);
-      record2 = createRandomZoneRecord(zone);
       user = createRandomUser();
 
-      mockserver.addZone(createRandomZone());
-      mockserver.addZone(zone, [record1, record2]);
+      mockserver.addZone(zone);
       mockserver.addUser(user);
+
+      zone.group = group;
     });
 
-    it('should return the second zone\'s records', function (done) {
+    it('should change the group of the first zone', function (done) {
 
       request(serverurl)
-        .get('/zones/2/records')
-        .auth(user.username, user.apitoken)
-        .expect(200)
-        .expect([{
-          zone_record: expectedRecordResponse(2, zone, 1, record1)
-        },{
-          zone_record: expectedRecordResponse(2, zone, 2, record2)
-        }])
+        .put('/zones/1')
+        .auth(user.username, user.password)
+        .send({ zone: { group: group }})
+        .expect(202)
+        .expect({ zone: expectedZoneResponse(1, zone) })
         .end(done);
+
+    });
+
+    it('should have changed the group for the first zone', function () {
+
+      assert.equal(mockserver.getZone(1).group, group);
 
     });
 
@@ -299,7 +442,7 @@ describe('Mock PointHQ Server', function () {
 
       request(serverurl)
         .get('/zone/unknown_zone')
-        .auth(user.username, user.apitoken)
+        .auth(user.username, user.password)
         .expect(404)
         .end(done);
 
@@ -323,7 +466,7 @@ describe('Mock PointHQ Server', function () {
 
       request(serverurl)
         .get('/zone/1')
-        .auth(user.username, user.apitoken)
+        .auth(user.username, user.password)
         .expect(404)
         .end(done);
 
@@ -331,98 +474,76 @@ describe('Mock PointHQ Server', function () {
 
   });
 
-  describe('GET /unknown_path', function () {
+});
 
+describe('Zone Records', function () {
+
+  describe('GET /zone/1/records', function () {
+
+    var zone;
+    var record1, record2;
     var user;
 
     before(function () {
       mockserver.reset();
 
+      zone = createRandomZone();
+      record1 = createRandomZoneRecord(zone);
+      record2 = createRandomZoneRecord(zone);
       user = createRandomUser();
 
+      mockserver.addZone(zone, [record1, record2]);
       mockserver.addUser(user);
     });
 
-    it('should return 404', function (done) {
+    it('should return the first zone\'s records', function (done) {
 
       request(serverurl)
-        .get('/unknown_path')
-        .auth(user.username, user.apitoken)
-        .expect(404)
+        .get('/zones/1/records')
+        .auth(user.username, user.password)
+        .expect(200)
+        .expect([{
+          zone_record: expectedRecordResponse(1, zone, 1, record1)
+        },{
+          zone_record: expectedRecordResponse(1, zone, 2, record2)
+        }])
         .end(done);
 
     });
 
   });
 
-  describe('DELETE /zone/2', function () {
+  describe('GET /zone/2/records', function () {
 
     var zone;
+    var record1, record2;
+    var user;
 
     before(function () {
       mockserver.reset();
 
       zone = createRandomZone();
+      record1 = createRandomZoneRecord(zone);
+      record2 = createRandomZoneRecord(zone);
       user = createRandomUser();
 
       mockserver.addZone(createRandomZone());
-      mockserver.addZone(zone);
+      mockserver.addZone(zone, [record1, record2]);
       mockserver.addUser(user);
     });
 
-    it('should delete the second zone', function (done) {
+    it('should return the second zone\'s records', function (done) {
 
       request(serverurl)
-        .delete('/zones/2')
-        .auth(user.username, user.apitoken)
+        .get('/zones/2/records')
+        .auth(user.username, user.password)
         .expect(200)
-        .expect({ zone: { status: "OK" }})
+        .expect([{
+          zone_record: expectedRecordResponse(2, zone, 1, record1)
+        },{
+          zone_record: expectedRecordResponse(2, zone, 2, record2)
+        }])
         .end(done);
-
-    });
-
-    it('should have deleted the zone from the server', function () {
-
-      assert.equal(mockserver.getZones().length, 1);
-
-    });
-
-  });
-
-  describe('PUT /zone/1', function () {
-
-    var zone;
-    var group;
-
-    before(function () {
-      mockserver.reset();
-
-      group = "new group";
-
-      zone = createRandomZone();
-      user = createRandomUser();
-
-      mockserver.addZone(zone);
-      mockserver.addUser(user);
-
-      zone.group = group;
-    });
-
-    it('should change the group of the first zone', function (done) {
-
-      request(serverurl)
-        .put('/zones/1')
-        .auth(user.username, user.apitoken)
-        .send({ zone: { group: group }})
-        .expect(202)
-        .expect({ zone: expectedZoneResponse(1, zone) })
-        .end(done);
-
-    });
-
-    it('should have changed the group for the first zone', function () {
-
-      assert.equal(mockserver.getZone(1).group, group);
 
     });
 
@@ -433,6 +554,7 @@ describe('Mock PointHQ Server', function () {
     var zone;
     var record;
     var ipAddress;
+    var user;
 
     before(function () {
       mockserver.reset();
@@ -453,7 +575,7 @@ describe('Mock PointHQ Server', function () {
 
       request(serverurl)
         .put('/zones/1/records/1')
-        .auth(user.username, user.apitoken)
+        .auth(user.username, user.password)
         .send({ zone_record: { data: ipAddress }})
         .expect(202)
         .expect({ zone_record: expectedRecordResponse(1, zone, 1, record) })
