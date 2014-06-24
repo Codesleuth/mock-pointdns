@@ -1,7 +1,7 @@
 Mock PointDNS
 =============
 
-[ ![Codeship Status for Codesleuth/mock-pointdns](https://codeship.io/projects/074ee780-dace-0131-7546-42c710d18839/status)](https://codeship.io/projects/24377)
+[![Build Status](https://travis-ci.org/Codesleuth/mock-pointdns.svg?branch=master)](https://travis-ci.org/Codesleuth/mock-pointdns)
 
 Helps integrate with the PointDNS API through acceptance testing.
 
