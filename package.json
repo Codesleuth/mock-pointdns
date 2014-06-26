@@ -4,7 +4,7 @@
   "description": "Mocks the pointdns API for use in local testing. See https://pointhq.com/api/docs",
   "main": "./lib/app.js",
   "scripts": {
-    "test": "mocha -R spec",
+    "test": "mocha -R spec --check-leaks",
     "start": "node ./example/index.js"
   },
   "repository": {
