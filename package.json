@@ -1,7 +1,7 @@
 {
   "name": "mock-pointdns",
   "version": "0.0.1",
-  "description": "Mocks the pointdns API for use in local testing. See https://pointhq.com/api/docs",
+  "description": "Mocks of the PointDNS API for use in local testing. See https://pointhq.com/api/docs",
   "main": "./lib/app.js",
   "scripts": {
     "test": "mocha -R spec --check-leaks",
@@ -11,12 +11,29 @@
     "type": "git",
     "url": "https://github.com/codesleuth/mock-pointdns"
   },
+  "bugs": {
+    "url": "https://github.com/codesleuth/mock-pointdns/issues"
+  },
+  "engines" : {
+    "node" : ">=0.8"
+  },
   "keywords": [
     "pointdns",
-    "mock"
+    "mock",
+    "pointhq",
+    "test",
+    "dns",
+    "api",
+    "acceptance"
   ],
-  "author": "David Wood <david.p.wood@gmail.com>",
-  "license": "MIT",
+  "author": {
+    "name": "David Wood",
+    "email": "david.p.wood@gmail.com"
+  },
+  "license": {
+    "type": "MIT",
+    "url": "https://github.com/Codesleuth/mock-pointdns/raw/master/LICENSE"
+  },
   "dependencies": {
     "express": "~4.4.1",
     "body-parser": "~1.4.1",
