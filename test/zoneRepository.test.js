@@ -1,11 +1,7 @@
 var ZoneRepository = require('../lib/zoneRepository'),
     random = require('../lib/random'),
     assert = require('assert');
-
-
-function createRandomRecordType() {
-  return random.choice('A', 'CNAME', 'MX', 'TXT', 'NS', 'SRV', 'AAAA', 'SSHFP', 'PTR', 'ALIAS');
-}
+    
 
 describe('Zone Repository', function () {
 
@@ -18,11 +14,11 @@ describe('Zone Repository', function () {
       repo = new ZoneRepository();
 
       expectedZone = {
-        id: random.number(1, 9999),
+        id: random.integer(1, 9999),
         name: random.string(),
         group: random.string(),
-        "user-id": random.number(1, 999),
-        ttl: random.number(1, 5000),
+        "user-id": random.integer(1, 999),
+        ttl: random.integer(1, 5000),
         records: [{
           name: random.string()
         }],
@@ -63,17 +59,11 @@ describe('Zone Repository', function () {
     before(function () {
       repo = new ZoneRepository();
 
-      expectedCount = random.number(0, 100);
+      expectedCount = random.integer(0, 100);
 
       for (var i = 0; i < expectedCount; i++) {
-        var zone = {
-          id: i,
-          name: random.string(),
-          group: random.string(),
-          "user-id": random.number(1, 999),
-          ttl: random.number(1, 5000)
-        };
-
+        var zone = random.zone();
+        zone.id = i;
         repo.addZone(zone);
       };
     });
@@ -94,19 +84,13 @@ describe('Zone Repository', function () {
     before(function () {
       repo = new ZoneRepository();
 
-      expectedCount = random.number(0, 100);
+      expectedCount = random.integer(0, 100);
       expectedZones = [];
 
       for (var i = 0; i < expectedCount; i++) {
-        var zone = {
-          id: i,
-          name: random.string(),
-          group: random.string(),
-          "user-id": random.number(1, 999),
-          ttl: random.number(1, 5000),
-          records: []
-        };
-
+        var zone = random.zone();
+        zone.id = i;
+        zone.records = [];
         repo.addZone(zone);
         expectedZones.push(zone);
       }
@@ -131,17 +115,11 @@ describe('Zone Repository', function () {
     before(function () {
       repo = new ZoneRepository();
 
-      var createNum = random.number(0, 100);
+      var createNum = random.integer(0, 100);
 
       for (var i = 0; i < createNum; i++) {
-        var zone = {
-          id: i,
-          name: random.string(),
-          group: random.string(),
-          "user-id": random.number(1, 999),
-          ttl: random.number(1, 5000)
-        };
-
+        var zone = random.zone();
+        zone.id = i;
         repo.addZone(zone);
       };
 
@@ -161,15 +139,7 @@ describe('Zone Repository', function () {
 
     before(function () {
       repo = new ZoneRepository();
-
-      zone = {
-        id: random.number(1, 9999),
-        name: random.string(),
-        group: random.string(),
-        "user-id": random.number(1, 999),
-        ttl: random.number(1, 5000)
-      };
-
+      zone = random.zone();
       repo.addZone(zone);
     });
 
@@ -191,35 +161,13 @@ describe('Zone Repository', function () {
     before(function () {
       repo = new ZoneRepository();
 
-      expectedFirstRecord = {
-        id: random.number(1, 999),
-        name: random.string(),
-        data: random.ipAddress(),
-        aux: random.string(),
-        record_type: createRandomRecordType(),
-        redirect_to: random.string(),
-        ttl: random.number(1, 5000),
-        asdasdjkadkj: "this should be ignored"
-      };
+      expectedFirstRecord = random.record();
+      expectedFirstRecord.asdasdjkadkj = "this should be ignored";
 
-      expectedSecondRecord = {
-        id: expectedFirstRecord.id + random.number(1, 999),
-        name: random.string(),
-        data: random.ipAddress(),
-        aux: random.string(),
-        record_type: createRandomRecordType(),
-        redirect_to: random.string(),
-        ttl: random.number(1, 5000),
-        garbage: "this should also be ignored"
-      };
+      expectedSecondRecord = random.record();
+      expectedSecondRecord.garbage = "this should also be ignored";
 
-      expectedZone = {
-        id: random.number(1, 9999),
-        name: random.string(),
-        group: random.string(),
-        "user-id": random.number(1, 999),
-        ttl: random.number(1, 5000)
-      }
+      expectedZone = random.zone();
 
       repo.addZone(expectedZone, [expectedFirstRecord, expectedSecondRecord]);
     });
@@ -271,27 +219,11 @@ describe('Zone Repository', function () {
 
     before(function () {
       repo = new ZoneRepository();
-
-      zone = {
-        id: random.number(1, 999),
-        name: random.string(),
-        group: random.string(),
-        "user-id": random.number(1, 999),
-        ttl: random.number(1, 5000)
-      };
-
-      record = {
-        id: random.number(1, 999),
-        name: random.string(),
-        data: random.ipAddress(),
-        aux: random.string(),
-        record_type: createRandomRecordType(),
-        redirect_to: random.string(),
-        ttl: random.number(1, 5000)
-      };
+      zone = random.zone();
+      record = random.record();
     });
 
-    it('should throw an exception when a record of the same id is added', function () {
+    it('should throw an exception when a record of the same id is added to the same zone', function () {
       assert.throws(function () {
         repo.addZone(zone, [record, record]);
       }, Error);
@@ -307,20 +239,13 @@ describe('Zone Repository', function () {
     before(function () {
       repo = new ZoneRepository();
 
-      zone = {
-        id: random.number(1, 9999),
-        name: random.string(),
-        group: random.string(),
-        "user-id": random.number(1, 999),
-        ttl: random.number(1, 5000)
-      };
-
+      zone = random.zone();
       repo.addZone(zone);
 
       zone.name = random.string();
       zone.group = random.string();
-      zone["user-id"] = random.number(1, 999);
-      zone.ttl = random.number(1, 5000);
+      zone["user-id"] = random.integer(1, 999);
+      zone.ttl = random.integer(1, 5000);
 
       repo.updateZone(zone);
     });
@@ -346,24 +271,8 @@ describe('Zone Repository', function () {
     before(function () {
       repo = new ZoneRepository();
 
-      zone = {
-        id: random.number(1, 9999),
-        name: random.string(),
-        group: random.string(),
-        "user-id": random.number(1, 999),
-        ttl: random.number(1, 5000)
-      };
-
-      record = {
-        id: random.number(1, 999),
-        name: random.string(),
-        data: random.ipAddress(),
-        aux: random.string(),
-        record_type: createRandomRecordType(),
-        redirect_to: random.string(),
-        ttl: random.number(1, 5000)
-      };
-
+      zone = random.zone();
+      record = random.record();
       repo.addZone(zone, [record]);
 
       record.data = random.ipAddress();
@@ -394,14 +303,7 @@ describe('Zone Repository', function () {
     before(function () {
       repo = new ZoneRepository();
 
-      zone = {
-        id: random.number(1, 999),
-        name: random.string(),
-        group: random.string(),
-        "user-id": random.number(1, 999),
-        ttl: random.number(1, 5000)
-      };
-
+      zone = random.zone();
       repo.addZone(zone);
       repo.removeZone(zone.id);
     });
