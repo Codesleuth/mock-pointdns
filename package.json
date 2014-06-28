@@ -41,7 +41,6 @@
   },
   "devDependencies": {
     "supertest": "0.13.0",
-    "mocha": "1.20.1",
-    "node-uuid": "1.4.1"
+    "mocha": "1.20.1"
   }
 }
