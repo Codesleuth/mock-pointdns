@@ -1,6 +1,6 @@
 {
   "name": "mock-pointdns",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Mocks of the PointDNS API for use in local testing. See https://pointhq.com/api/docs",
   "main": "./lib/app.js",
   "scripts": {
