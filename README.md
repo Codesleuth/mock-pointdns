@@ -61,7 +61,7 @@ This mock server is not controlled or endorsed by [Copper.io](copperio) in any w
 If you wish to contribute, pull requests are welcome. Keeping this project up to date with the API it mocks out is key to its usefulness. Please contribute!
 
 
-[mocha]:http://visionmedia.github.io/mocha/
+[mocha]:http://mochajs.org/
 [copperio]:http://copper.io/
 [pointhq]:https://pointhq.com/
 [pointdnsdocs]:https://pointhq.com/api/docs
